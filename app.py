@@ -1,4 +1,7 @@
 import streamlit as st
+import sklearn
+from sklearn.svm import SVC
+from sklearn.linear_model import LogisticRegression
 import pickle
 import base64
 import os
