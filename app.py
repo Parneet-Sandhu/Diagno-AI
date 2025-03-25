@@ -2,6 +2,7 @@ import streamlit as st
 import pickle
 import base64
 import os
+import pandas as pd
 
 def get_base64_encoded_image(image_path):
     with open(image_path, "rb") as image_file:
@@ -82,12 +83,13 @@ except Exception as e:
 models = {
     'parkinsons': pickle.load(open('Models/parkinsons_model.sav', 'rb')),
     'lung_cancer': pickle.load(open('Models/lungs_disease_model.sav', 'rb')),
-    'heart_disease': pickle.load(open('Models/heart_disease_model.sav', 'rb'))  # Add the new model
+    'heart_disease': pickle.load(open('Models/heart_disease_model.sav', 'rb')), # Add the new model
+    'diabetes': pickle.load(open('Models/diabetes_prediction_model.sav', 'rb'))  # Added diabetes model
 }
 
 selected = st.selectbox(
     'Select a Disease to Predict',
-    ['Parkinsons Disease', 'Lung Cancer', 'Heart Disease']  # Add the new disease
+    ['Parkinsons Disease', 'Lung Cancer', 'Heart Disease', 'Diabetes']  # Added Diabetes
 )
 
 def display_input(label, tooltip, key, type="text"):
@@ -258,6 +260,67 @@ elif selected == 'Heart Disease':
             st.success("✅ The model predicts that the patient is healthy")
         st.markdown('</div>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
+
+if selected == 'Diabetes':
+    st.title('Diabetes Prediction')
+    col1, col2, col3 = st.columns(3)  # Divided into 3 columns
+
+    with col1:
+        st.write("### Patient Information")
+        age = st.slider('Age', 0, 100, 30, key='diabetes_age', help='Patient age in years')
+        hypertension = st.selectbox('Hypertension', ['Yes', 'No'], key='diabetes_hypertension', help='Does the patient have hypertension? (Yes: 1, No: 0)')
+        heart_disease = st.selectbox('Heart Disease', ['Yes', 'No'], key='diabetes_heart_disease', help='Does the patient have heart disease? (Yes: 1, No: 0)')
+        bmi = st.number_input('BMI', min_value=10.0, max_value=100.0, step=0.1, key='diabetes_bmi', help='Body Mass Index (BMI)')
+
+    with col2:
+        st.write("### Blood Test Results")
+        HbA1c_level = st.number_input('HbA1c Level', min_value=3.0, max_value=10.0, step=0.1, key='diabetes_HbA1c_level', help='Average blood sugar level over the past 3 months')
+        blood_glucose_level = st.number_input('Blood Glucose Level', min_value=50, max_value=300, step=1, key='diabetes_blood_glucose_level', help='Current blood glucose level in mg/dL')
+
+    with col3:
+        st.write("### Additional Information")
+        gender = st.selectbox('Gender', ['Male', 'Female', 'Other'], key='diabetes_gender', help='Patient gender')
+        smoking_history = st.selectbox(
+            'Smoking History',
+            ['never', 'current', 'former', 'ever', 'not current', 'No Info'],
+            key='diabetes_smoking_history',
+            help='Patient smoking history'
+        )
+
+    st.markdown('<div class="button-container">', unsafe_allow_html=True)
+    if st.button('Predict Diabetes', type='primary', key='diabetes_predict_button'):
+        st.markdown('<div class="prediction-container">', unsafe_allow_html=True)
+
+        # Map inputs to model features
+        input_data = {
+            'age': age,
+            'hypertension': 1 if hypertension == 'Yes' else 0,
+            'heart_disease': 1 if heart_disease == 'Yes' else 0,
+            'bmi': bmi,
+            'HbA1c_level': HbA1c_level,
+            'blood_glucose_level': blood_glucose_level,
+            'gender_Male': 1 if gender == 'Male' else 0,
+            'gender_Other': 1 if gender == 'Other' else 0,
+            'smoking_history_current': 1 if smoking_history == 'current' else 0,
+            'smoking_history_ever': 1 if smoking_history == 'ever' else 0,
+            'smoking_history_former': 1 if smoking_history == 'former' else 0,
+            'smoking_history_never': 1 if smoking_history == 'never' else 0,
+            'smoking_history_not current': 1 if smoking_history == 'not current' else 0
+        }
+
+        # Convert input data to DataFrame
+        input_df = pd.DataFrame([input_data])
+
+        # Make prediction
+        prediction = models['diabetes'].predict(input_df)
+
+        # Display result
+        if prediction[0] == 1:
+            st.error("⚠️ The model predicts that the patient may have Diabetes")
+        else:
+            st.success("✅ The model predicts that the patient does not have Diabetes")
+        st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)   
 
 st.write("---")
 st.markdown("""
