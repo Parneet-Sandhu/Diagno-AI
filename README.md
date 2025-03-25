@@ -102,5 +102,3 @@ This project is licensed under the MIT License.
 
 - The machine learning models used in this application were trained on publicly available datasets.
 - Special thanks to the Streamlit community for providing an excellent framework for building interactive web applications.
-
-Feel free to contribute to this project by submitting issues or pull requests!
