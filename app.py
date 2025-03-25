@@ -81,12 +81,13 @@ except Exception as e:
 
 models = {
     'parkinsons': pickle.load(open('Models/parkinsons_model.sav', 'rb')),
-    'lung_cancer': pickle.load(open('Models/lungs_disease_model.sav', 'rb'))
+    'lung_cancer': pickle.load(open('Models/lungs_disease_model.sav', 'rb')),
+    'heart_disease': pickle.load(open('Models/heart_disease_model.sav', 'rb'))  # Add the new model
 }
 
 selected = st.selectbox(
     'Select a Disease to Predict',
-    ['Parkinsons Disease', 'Lung Cancer']
+    ['Parkinsons Disease', 'Lung Cancer', 'Heart Disease']  # Add the new disease
 )
 
 def display_input(label, tooltip, key, type="text"):
@@ -200,6 +201,59 @@ elif selected == 'Lung Cancer':
         
         if prediction[0] == 1:
             st.error("⚠️ The model predicts that the patient may have Lung Cancer")
+        else:
+            st.success("✅ The model predicts that the patient is healthy")
+        st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+elif selected == 'Heart Disease':
+    st.title('Heart Disease')
+    col1, col2, col3 = st.columns(3)  # Divided into 3 columns
+
+    with col1:
+        st.write("### Patient Information")
+        age = st.slider('Age', 20, 100, 50, help='Patient age in years')
+        sex = st.selectbox('Sex', ['Male', 'Female'], key='sex', help='Patient gender (Male or Female)')
+        cp = st.selectbox('Chest Pain Type (cp)', [0, 1, 2, 3], key='cp', help='Chest pain type (0: Typical Angina, 1: Atypical Angina, 2: Non-Anginal Pain, 3: Asymptomatic)')
+        trestbps = st.number_input('Resting Blood Pressure (trestbps)', min_value=50, max_value=250, step=1, key='trestbps', help='Resting blood pressure in mm Hg')
+
+    with col2:
+        st.write("### Cholesterol and Sugar Levels")
+        chol = st.number_input('Serum Cholesterol (chol)', min_value=100, max_value=600, step=1, key='chol', help='Serum cholesterol in mg/dl')
+        fbs = st.selectbox('Fasting Blood Sugar > 120 mg/dl (fbs)', ['Yes', 'No'], key='fbs', help='Fasting blood sugar > 120 mg/dl (Yes: 1, No: 0)')
+        restecg = st.selectbox('Resting ECG Results (restecg)', [0, 1, 2], key='restecg', help='Resting electrocardiographic results (0: Normal, 1: ST-T wave abnormality, 2: Left ventricular hypertrophy)')
+        thalach = st.number_input('Maximum Heart Rate Achieved (thalach)', min_value=50, max_value=250, step=1, key='thalach', help='Maximum heart rate achieved during exercise')
+
+    with col3:
+        st.write("### Exercise and Other Factors")
+        exang = st.selectbox('Exercise Induced Angina (exang)', ['Yes', 'No'], key='exang', help='Exercise-induced angina (Yes: 1, No: 0)')
+        oldpeak = st.number_input('ST Depression Induced by Exercise (oldpeak)', min_value=0.0, max_value=10.0, step=0.1, key='oldpeak', help='ST depression induced by exercise relative to rest')
+        slope = st.selectbox('Slope of the Peak Exercise ST Segment (slope)', [0, 1, 2], key='slope', help='Slope of the peak exercise ST segment (0: Upsloping, 1: Flat, 2: Downsloping)')
+        ca = st.number_input('Number of Major Vessels (ca)', min_value=0, max_value=4, step=1, key='ca', help='Number of major vessels (0-4) colored by fluoroscopy')
+        thal = st.selectbox('Thalassemia (thal)', [0, 1, 2, 3], key='thal', help='Thalassemia (0: Normal, 1: Fixed Defect, 2: Reversible Defect, 3: Unknown)')
+
+    st.markdown('<div class="button-container">', unsafe_allow_html=True)
+    if st.button('Predict Heart Disease', type='primary'):
+        st.markdown('<div class="prediction-container">', unsafe_allow_html=True)
+        input_data = [[
+            age,
+            1 if sex == 'Male' else 0,
+            cp,
+            trestbps,
+            chol,
+            1 if fbs == 'Yes' else 0,
+            restecg,
+            thalach,
+            1 if exang == 'Yes' else 0,
+            oldpeak,
+            slope,
+            ca,
+            thal
+        ]]
+        prediction = models['heart_disease'].predict(input_data)
+
+        if prediction[0] == 1:
+            st.error("⚠️ The model predicts that the patient may have Heart Disease")
         else:
             st.success("✅ The model predicts that the patient is healthy")
         st.markdown('</div>', unsafe_allow_html=True)
